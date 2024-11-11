@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.ts",
+    "dev": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -10,10 +12,15 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/node": "^22.9.0",
+    "@types/pg": "^8.11.10",
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.3"
+    "@neondatabase/serverless": "^0.10.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "pg": "^8.13.1"
   }
 }
