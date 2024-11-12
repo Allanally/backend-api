@@ -53,7 +53,7 @@ export async function GET(request: Request, {id}: { id: string }) {
     }
 }
 
-export async function POST(request: Request, {notificationId}: {notificationId: number}) {
+export async function POST(request: Request, {notificationId}: {notificationId: string}) {
 
     try {
         const body = await request.json();

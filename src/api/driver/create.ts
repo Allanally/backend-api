@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
 
     if(!legalname || !email || !phonenumber || !password || !nationalid || !drivingpermit || !vehicle || !seats ||!clerkId ||!price ||!role){
-        return new Response.json({ error: 'Missing required fields' }, { status: 400 });
+        return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const response = await sql`

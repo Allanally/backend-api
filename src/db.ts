@@ -19,8 +19,8 @@ const connectDB = async () => {
   try {
     await client.connect();
     console.log('Connected to PostgreSQL database');
-  } catch (err) {
-    console.error('Connection error', err.stack);
+  } catch (error) {
+    console.error('Connection error', error);
     process.exit(1);  
   }
 };
@@ -29,8 +29,8 @@ const disconnectDB = async () => {
   try {
     await client.end();
     console.log('Disconnected from PostgreSQL database');
-  } catch (err) {
-    console.error('Error disconnecting', err.stack);
+  } catch (error) {
+    console.error('Error disconnecting', error);
   }
 };
 

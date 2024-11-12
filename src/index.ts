@@ -1,20 +1,29 @@
-
 import { POST } from './api/driver/create'   
 import { GET } from './api/driver/get'        
 import { PATCH } from './api/driver/[id]'
 import { POST as createNotification } from './api/notification/create'                                
-import {POST as updateNotificationStatus, GET as getNotifications } from './api/notification/[id]'         
+import { POST as updateNotificationStatus, GET as getNotifications } from './api/notification/[id]'         
 import { POST as getUnreadNotificationCount } from './api/notification/getUnreadNotification' 
 import { POST as getUserNotificationToken } from './api/notification/getUserNotificationToken'
-import { POST as createUser, PATCH as  updateUserToken, GET as getUserData } from './api/user';
-import { POST as getRide, POST as updateRide} from './api/ride/[id]';
+import { POST as createUser, PATCH as updateUserToken, GET as getUserData } from './api/user';
+import { POST as getRide, POST as updateRide } from './api/ride/[id]';
 import { POST as createRide } from './api/ride/create'
+import http from 'http';
+
+// Log to indicate server start
+console.log("Server is starting...");
+
+setInterval(() => {
+    console.log("Server is running...");
+}, 10000);
+
+const port = 3000;
+
 
 export default async function handler(req: Request) {
     const { method, url } = req;
 
     //driver
-
     if (url.startsWith('/api/driver/create') && method === 'POST') {
         return POST(req);
     }
@@ -28,7 +37,6 @@ export default async function handler(req: Request) {
     }
 
     //notification 
-
     if (url.startsWith('/api/notification/create') && method === 'POST') {
         return createNotification(req);
     }
@@ -63,7 +71,7 @@ export default async function handler(req: Request) {
     if (url.startsWith('/api/ride/create') && method === 'POST') {
         return createRide(req);
     }
-    if (url.startsWith('/api/ride') && method === 'GET') {
+    if (url.startsWith('/api/ride/') && method === 'GET') {
         return getRide(req);
     }
     if (url.startsWith('/api/ride') && method === 'POST') {
