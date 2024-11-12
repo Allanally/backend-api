@@ -1,6 +1,8 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = handler;
 const create_1 = require("./api/driver/create");
 const get_1 = require("./api/driver/get");
 const _id_1 = require("./api/driver/[id]");
@@ -11,64 +13,107 @@ const getUserNotificationToken_1 = require("./api/notification/getUserNotificati
 const user_1 = require("./api/user");
 const _id_3 = require("./api/ride/[id]");
 const create_3 = require("./api/ride/create");
-// Log to indicate server start
+const http_1 = __importDefault(require("http"));
 console.log("Server is starting...");
-// Keep the process alive and log a message every 10 seconds
 setInterval(() => {
     console.log("Server is running...");
 }, 10000);
-async function handler(req) {
-    const { method, url } = req;
-    //driver
-    if (url.startsWith('/api/driver/create') && method === 'POST') {
-        return (0, create_1.POST)(req);
+const PORT = process.env.PORT || 3000;
+async function handler(req, res) {
+    const method = req.method || '';
+    const url = req.url || '';
+    try {
+        let response;
+        // Driver routes
+        if (url.startsWith('/api/driver/create') && method === 'POST') {
+            response = await (0, create_1.POST)(new Request(url, { method }));
+        }
+        else if (url.startsWith('/api/driver/get') && method === 'GET') {
+            response = await (0, get_1.GET)();
+        }
+        else if (/^\/api\/driver\/(\d+)$/.test(url) && method === 'PATCH') {
+            const id = url.match(/^\/api\/driver\/(\d+)$/)?.[1];
+            if (id) {
+                response = await (0, _id_1.PATCH)(new Request(url, { method }), { id });
+            }
+            else {
+                response = new Response(JSON.stringify({ error: 'Invalid driver ID' }), { status: 400 });
+            }
+        }
+        // Notification routes
+        else if (url.startsWith('/api/notification/create') && method === 'POST') {
+            response = await (0, create_2.POST)(new Request(url, { method }));
+        }
+        else if (/^\/api\/notification\/(\d+)$/.test(url) && method === 'POST') {
+            const notificationId = url.match(/^\/api\/notification\/(\d+)$/)?.[1];
+            if (notificationId) {
+                response = await (0, _id_2.POST)(new Request(url, { method }), { notificationId });
+            }
+            else {
+                response = new Response(JSON.stringify({ error: 'Invalid notification ID' }), { status: 400 });
+            }
+        }
+        else if (/^\/api\/notification\/(\d+)$/.test(url) && method === 'GET') {
+            const notificationId = url.match(/^\/api\/notification\/(\d+)$/)?.[1];
+            if (notificationId) {
+                response = await (0, _id_2.GET)(new Request(url, { method }), { id: notificationId });
+            }
+            else {
+                response = new Response(JSON.stringify({ error: 'Invalid notification ID' }), { status: 400 });
+            }
+        }
+        else if (url.startsWith('/api/notification/getUnreadNotification') && method === 'POST') {
+            response = await (0, getUnreadNotification_1.POST)(new Request(url, { method }));
+        }
+        else if (url.startsWith('/api/notification/getUserNotificationToken') && method === 'POST') {
+            response = await (0, getUserNotificationToken_1.POST)(new Request(url, { method }));
+        }
+        // User routes
+        else if (url.startsWith('/api/user') && method === 'POST') {
+            response = await (0, user_1.POST)(new Request(url, { method }));
+        }
+        else if (url.startsWith('/api/user') && method === 'PATCH') {
+            response = await (0, user_1.PATCH)(new Request(url, { method }));
+        }
+        else if (url.startsWith('/api/user') && method === 'GET') {
+            response = await (0, user_1.GET)(new Request(url, { method }));
+        }
+        // Ride routes
+        else if (url.startsWith('/api/ride/create') && method === 'POST') {
+            response = await (0, create_3.POST)(new Request(url, { method }));
+        }
+        else if (url.startsWith('/api/ride/') && method === 'GET') {
+            response = await (0, _id_3.POST)(new Request(url, { method }));
+        }
+        else if (url.startsWith('/api/ride') && method === 'POST') {
+            response = await (0, _id_3.POST)(new Request(url, { method }));
+        }
+        // 404 for unknown routes
+        else {
+            response = new Response(JSON.stringify({ error: 'Route not found' }), { status: 404 });
+        }
+        // Transform Headers to a plain object for writeHead
+        const headersObj = {};
+        response.headers.forEach((value, key) => {
+            headersObj[key] = value;
+        });
+        res.writeHead(response.status, headersObj);
+        // Convert ReadableStream body to Buffer and send response
+        if (response.body) {
+            const body = await response.arrayBuffer();
+            res.end(Buffer.from(body));
+        }
+        else {
+            res.end();
+        }
     }
-    if (url.startsWith('/api/driver/get') && method === 'GET') {
-        return (0, get_1.GET)();
+    catch (error) {
+        console.error("Error handling request:", error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
     }
-    const matchDriverId = url.match(/^\/api\/driver\/(\d+)$/);
-    if (matchDriverId && method === 'PATCH') {
-        const id = matchDriverId[1];
-        return (0, _id_1.PATCH)(req, { id });
-    }
-    //notification 
-    if (url.startsWith('/api/notification/create') && method === 'POST') {
-        return (0, create_2.POST)(req);
-    }
-    const matchNotificationId = url.match(/^\/api\/notification\/(\d+)$/);
-    if (matchNotificationId && method === 'POST') {
-        const notificationId = matchNotificationId[1];
-        return (0, _id_2.POST)(req, { notificationId });
-    }
-    if (matchNotificationId && method === 'GET') {
-        const notificationId = matchNotificationId[1];
-        return (0, _id_2.GET)(req, { id: notificationId });
-    }
-    if (url.startsWith('/api/notification/getUnreadNotification') && method === 'POST') {
-        return (0, getUnreadNotification_1.POST)(req);
-    }
-    if (url.startsWith('/api/notification/getUserNotificationToken') && method === 'POST') {
-        return (0, getUserNotificationToken_1.POST)(req);
-    }
-    //user
-    if (url.startsWith('/api/user') && method === 'POST') {
-        return (0, user_1.POST)(req);
-    }
-    if (url.startsWith('/api/user') && method === 'PATCH') {
-        return (0, user_1.PATCH)(req);
-    }
-    if (url.startsWith('/api/user') && method === 'GET') {
-        return (0, user_1.GET)(req);
-    }
-    //ride 
-    if (url.startsWith('/api/ride/create') && method === 'POST') {
-        return (0, create_3.POST)(req);
-    }
-    if (url.startsWith('/api/ride') && method === 'GET') {
-        return (0, _id_3.POST)(req);
-    }
-    if (url.startsWith('/api/ride') && method === 'POST') {
-        return (0, _id_3.POST)(req);
-    }
-    return new Response(JSON.stringify({ error: 'Route not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
 }
+const server = http_1.default.createServer(handler);
+server.listen(PORT, () => {
+    console.log("Server is running on port");
+});
