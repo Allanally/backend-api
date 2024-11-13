@@ -5,9 +5,29 @@ exports.POST = POST;
 const serverless_1 = require("@neondatabase/serverless");
 async function POST(request) {
     try {
-        const body = await request.json();
-        console.log("Raw body recieved:", body); // Log the raw body
+        // Check if the request has a body
+        const contentType = request.headers.get("Content-Type");
+        if (contentType !== "application/json") {
+            return new Response(JSON.stringify({ error: "Content-Type must be application/json" }), { status: 400 });
+        }
+        const text = await request.text(); // Get the raw body as text
+        console.log("Raw received body:", text); // Log the raw body
+        if (!text) {
+            console.error("No body content received.");
+            return new Response(JSON.stringify({ error: "No body content" }), { status: 400 });
+        }
+        let body;
+        try {
+            body = JSON.parse(text); // Manually parse the body to catch any issues
+            console.log("Parsed body:", body);
+        }
+        catch (parseError) {
+            console.error("Error parsing JSON body:", parseError);
+            return new Response(JSON.stringify({ error: "Invalid JSON format" }), { status: 400 });
+        }
+        // Destructure the body to get individual parameters
         const { origin_address, destination_address, origin_latitude, origin_longitude, destination_latitude, destination_longitude, ride_time, fare_price, payment_status, driver_id, user_id, clerk_id, } = body;
+        // Validate required fields
         if (!origin_address ||
             !destination_address ||
             !origin_latitude ||
@@ -22,6 +42,7 @@ async function POST(request) {
             !clerk_id) {
             return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
         }
+        // Insert into the database
         const sql = (0, serverless_1.neon)(`${process.env.DATABASE_URL}`);
         const response = await sql `
         INSERT INTO rides ( 
