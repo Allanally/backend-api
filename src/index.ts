@@ -16,7 +16,7 @@ console.log("Server is starting...");
 // Periodically log server status
 setInterval(() => {
     console.log("Server is running...");
-}, 10000);
+}, 300000);
 
 const PORT = process.env.PORT || 3000;
 const BASE_URL = "https://ride-560b930add7e.herokuapp.com";
