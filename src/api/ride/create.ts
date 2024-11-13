@@ -4,8 +4,12 @@ import {neon} from "@neondatabase/serverless";
 
 export async function POST(request: Request) {
     try {
-        
-        const body = await request.json();
+        const text = await request.text();
+        console.log("Raw received body:", text);  // Log the raw body
+
+        const body = JSON.parse(text); // Manually parse to see any issues
+        console.log("Parsed body:", body);
+
         const {
             origin_address,
             destination_address,
@@ -20,7 +24,7 @@ export async function POST(request: Request) {
             user_id,
             clerk_id,
         } = body;
-        console.log({body})
+
         if (
             !origin_address ||
             !destination_address ||
@@ -32,17 +36,16 @@ export async function POST(request: Request) {
             !fare_price ||
             !payment_status ||
             !driver_id ||
-            !user_id    ||
+            !user_id ||
             !clerk_id
         ) {
-            return Response.json(
-                {error: "Missing required fields"},
-                {status: 400},
+            return new Response(
+                JSON.stringify({ error: "Missing required fields" }),
+                { status: 400 }
             );
         }
 
         const sql = neon(`${process.env.DATABASE_URL}`);
-
         const response = await sql`
         INSERT INTO rides ( 
           origin_address, 
@@ -74,11 +77,10 @@ export async function POST(request: Request) {
         RETURNING *;
         `;
 
-        console.log("DB Response", {response})
-        return Response.json({data: response[0]}, {status: 201});
+        console.log("Database response:", response);
+        return new Response(JSON.stringify({ data: response[0] }), { status: 201 });
     } catch (error) {
         console.error("Error inserting data into recent_rides:", error);
-        return Response.json({error: "Internal Server Error"}, {status: 500});
+        return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
     }
 }
-
