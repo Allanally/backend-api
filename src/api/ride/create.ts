@@ -5,7 +5,7 @@ import {neon} from "@neondatabase/serverless";
 export async function POST(request: Request) {
     try {
         
-        const body = await request.json();
+        const body = await request.text();
          console.log("Received body:", body);
         const {
             origin_address,
@@ -35,9 +35,9 @@ export async function POST(request: Request) {
             !user_id    ||
             !clerk_id
         ) {
-            return Response.json(
-                {error: "Missing required fields"},
-                {status: 400},
+            return new Response(
+                JSON.stringify({ error: "Missing required fields" }),
+                { status: 400 }
             );
         }
 
