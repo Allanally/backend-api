@@ -7,6 +7,7 @@ async function POST(request) {
     try {
         const body = await request.json();
         const { origin_address, destination_address, origin_latitude, origin_longitude, destination_latitude, destination_longitude, ride_time, fare_price, payment_status, driver_id, user_id, clerk_id, } = body;
+        console.log({ body });
         if (!origin_address ||
             !destination_address ||
             !origin_latitude ||
@@ -52,6 +53,7 @@ async function POST(request) {
         )
         RETURNING *;
         `;
+        console.log("DB Response", { response });
         return Response.json({ data: response[0] }, { status: 201 });
     }
     catch (error) {
