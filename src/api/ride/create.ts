@@ -5,7 +5,7 @@ import {neon} from "@neondatabase/serverless";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        console.log("Raw body recieved:", body);  // Log the raw body
+        console.log("RAW BODY RECIEVED:", body);  // Log the raw body
 
 
         const {
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         console.log("Database response:", response);
         return new Response(JSON.stringify({ data: response[0] }), { status: 201 });
     } catch (error) {
-        console.error("Error inserting data into recent_rides:", error);
+        console.error("ERROR inserting data into recent_rides:", error);
         return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
     }
 }
