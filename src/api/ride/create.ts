@@ -21,6 +21,8 @@ export async function POST(request: Request) {
             clerk_id,
         } = body;
 
+        console.log(body);
+
         if (
             !origin_address ||
             !destination_address ||
