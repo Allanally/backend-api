@@ -5,7 +5,7 @@ import {neon} from "@neondatabase/serverless";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        console.log("Raw received body: ⭐", body);  // Log the raw body
+        console.log("Raw body recieved:", body);  // Log the raw body
 
 
         const {

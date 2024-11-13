@@ -5,10 +5,8 @@ exports.POST = POST;
 const serverless_1 = require("@neondatabase/serverless");
 async function POST(request) {
     try {
-        const text = await request.text();
-        console.log("Raw received body:", text); // Log the raw body
-        const body = JSON.parse(text); // Manually parse to see any issues
-        console.log("Parsed body:", body);
+        const body = await request.json();
+        console.log("Raw body recieved:", body); // Log the raw body
         const { origin_address, destination_address, origin_latitude, origin_longitude, destination_latitude, destination_longitude, ride_time, fare_price, payment_status, driver_id, user_id, clerk_id, } = body;
         if (!origin_address ||
             !destination_address ||
