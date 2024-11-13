@@ -17,7 +17,7 @@ setInterval(() => {
     console.log("Server is running...");
 }, 10000);
 
-const PORT = process.env.ENV_PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
     const method = req.method || '';

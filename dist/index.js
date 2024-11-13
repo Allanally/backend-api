@@ -87,12 +87,10 @@ async function handler(req, res) {
             const matchRideId = url.match(/^\/api\/ride\/(\d+)$/);
             if (matchRideId && method === 'GET') {
                 const id = matchRideId[1];
-                // Pass `id` in the URL for `getRide`
                 response = await (0, _id_3.POST)(new Request(`/api/ride/${id}`, { method }));
             }
             else if (matchRideId && method === 'POST') {
                 const id = matchRideId[1];
-                // Pass `id` in the body for `updateRide`
                 response = await (0, _id_3.POST)(new Request(url, {
                     method,
                     body: JSON.stringify({ id }),
@@ -103,13 +101,11 @@ async function handler(req, res) {
                 response = new Response(JSON.stringify({ error: 'Route not found' }), { status: 404 });
             }
         }
-        // Transform Headers to a plain object for writeHead
         const headersObj = {};
         response.headers.forEach((value, key) => {
             headersObj[key] = value;
         });
         res.writeHead(response.status, headersObj);
-        // Convert ReadableStream body to Buffer and send response
         if (response.body) {
             const body = await response.arrayBuffer();
             res.end(Buffer.from(body));
