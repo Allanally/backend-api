@@ -7,6 +7,7 @@ async function POST(request) {
     try {
         // Check if the request has a body
         const contentType = request.headers.get("Content-Type");
+        console.log("Content-Type received:", contentType); // Log the received Content-Type header
         if (contentType !== "application/json") {
             return new Response(JSON.stringify({ error: "Content-Type must be application/json" }), { status: 400 });
         }
