@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             user_id,
             clerk_id,
         } = body;
-        console.log({body})
+        console.log(body)
         if (
             !origin_address ||
             !destination_address ||
