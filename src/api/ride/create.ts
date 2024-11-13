@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             user_id,
             clerk_id,
         } = body;
-
+        console.log({body})
         if (
             !origin_address ||
             !destination_address ||
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
         RETURNING *;
         `;
 
-    
+        console.log("DB Response", {response})
         return Response.json({data: response[0]}, {status: 201});
     } catch (error) {
         console.error("Error inserting data into recent_rides:", error);
