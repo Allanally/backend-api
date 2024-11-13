@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable prettier/prettier */
 const create_1 = require("./api/driver/create");
 const get_1 = require("./api/driver/get");
 const _id_1 = require("./api/driver/[id]");
@@ -18,7 +19,7 @@ console.log("Server is starting...");
 setInterval(() => {
     console.log("Server is running...");
 }, 10000);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.ENV_PORT || 3000;
 async function handler(req, res) {
     const method = req.method || '';
     const url = req.url || '';
@@ -82,15 +83,25 @@ async function handler(req, res) {
         else if (url.startsWith('/api/ride/create') && method === 'POST') {
             response = await (0, create_3.POST)(new Request(url, { method }));
         }
-        else if (url.startsWith('/api/ride/') && method === 'GET') {
-            response = await (0, _id_3.POST)(new Request(url, { method }));
-        }
-        else if (url.startsWith('/api/ride') && method === 'POST') {
-            response = await (0, _id_3.POST)(new Request(url, { method }));
-        }
-        // 404 for unknown routes
         else {
-            response = new Response(JSON.stringify({ error: 'Route not found' }), { status: 404 });
+            const matchRideId = url.match(/^\/api\/ride\/(\d+)$/);
+            if (matchRideId && method === 'GET') {
+                const id = matchRideId[1];
+                // Pass `id` in the URL for `getRide`
+                response = await (0, _id_3.POST)(new Request(`/api/ride/${id}`, { method }));
+            }
+            else if (matchRideId && method === 'POST') {
+                const id = matchRideId[1];
+                // Pass `id` in the body for `updateRide`
+                response = await (0, _id_3.POST)(new Request(url, {
+                    method,
+                    body: JSON.stringify({ id }),
+                    headers: { 'Content-Type': 'application/json' }
+                }));
+            }
+            else {
+                response = new Response(JSON.stringify({ error: 'Route not found' }), { status: 404 });
+            }
         }
         // Transform Headers to a plain object for writeHead
         const headersObj = {};
@@ -115,5 +126,5 @@ async function handler(req, res) {
 }
 const server = http_1.default.createServer(handler);
 server.listen(PORT, () => {
-    console.log("Server is running on port");
+    console.log(`Server is running on port ${PORT}`);
 });

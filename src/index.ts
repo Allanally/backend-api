@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { POST } from './api/driver/create';   
 import { GET } from './api/driver/get';        
 import { PATCH } from './api/driver/[id]';
@@ -16,7 +17,7 @@ setInterval(() => {
     console.log("Server is running...");
 }, 10000);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.ENV_PORT || 3000;
 
 async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
     const method = req.method || '';
@@ -74,18 +75,24 @@ async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
         // Ride routes
         else if (url.startsWith('/api/ride/create') && method === 'POST') {
             response = await createRide(new Request(url, { method }));
-        } else if (url.startsWith('/api/ride/') && method === 'GET') {
-            response = await getRide(new Request(url, { method }));
-        } else if (url.startsWith('/api/ride') && method === 'POST') {
-            response = await updateRide(new Request(url, { method }));
-        }
-
-        // 404 for unknown routes
+        } 
         else {
-            response = new Response(JSON.stringify({ error: 'Route not found' }), { status: 404 });
+            const matchRideId = url.match(/^\/api\/ride\/(\d+)$/); 
+            if (matchRideId && method === 'GET') {
+                const id = matchRideId[1];
+                response = await getRide(new Request(`/api/ride/${id}`, { method }));
+            } else if (matchRideId && method === 'POST') {
+                const id = matchRideId[1];
+                response = await updateRide(new Request(url, { 
+                    method, 
+                    body: JSON.stringify({ id }), 
+                    headers: { 'Content-Type': 'application/json' } 
+                }));
+            } else {
+                response = new Response(JSON.stringify({ error: 'Route not found' }), { status: 404 });
+            }
         }
 
-        // Transform Headers to a plain object for writeHead
         const headersObj: Record<string, string> = {};
         response.headers.forEach((value, key) => {
             headersObj[key] = value;
@@ -93,7 +100,6 @@ async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
 
         res.writeHead(response.status, headersObj);
         
-        // Convert ReadableStream body to Buffer and send response
         if (response.body) {
             const body = await response.arrayBuffer();
             res.end(Buffer.from(body));
@@ -109,5 +115,5 @@ async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
 
 const server = http.createServer(handler);
 server.listen(PORT, () => {
-    console.log("Server is running on port");
+    console.log(`Server is running on port ${PORT}`);
 });
