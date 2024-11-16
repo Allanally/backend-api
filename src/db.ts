@@ -1,50 +1,60 @@
-import { Client } from 'pg';
-import dotenv from 'dotenv';
+import { Client } from "pg";
+import dotenv from "dotenv";
 
 dotenv.config();
-const DATABASE_URL = process.env.DATABASE_URL;
+
+const DATABASE_URL = process.env.DIGITAL_DATABASE_URL;
 
 if (!DATABASE_URL) {
-  throw new Error("DATABASE_URL is not set");
+  throw new Error("DATABASE_URL environment variable is not set");
 }
 
 const client = new Client({
   connectionString: DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? {
-    rejectUnauthorized: true
-  } : false, 
+  ssl: process.env.NODE_ENV === "production"
+    ? { rejectUnauthorized: false } 
+    : false, 
 });
 
-const connectDB = async () => {
+export const connectDB = async (): Promise<void> => {
   try {
-    await client.connect();
-    console.log('Connected to PostgreSQL database');
+    if (!client.connect) {
+      await client.connect();
+      console.log("✅ Connected to PostgreSQL database");
+    }
   } catch (error) {
-    console.error('Connection error', error);
-    process.exit(1);  
+    console.error("❌ Error connecting to PostgreSQL:", error);
+    throw error; 
   }
 };
 
-const disconnectDB = async () => {
+
+export const disconnectDB = async (): Promise<void> => {
   try {
     await client.end();
-    console.log('Disconnected from PostgreSQL database');
+    console.log("🚪 Disconnected from PostgreSQL database");
   } catch (error) {
-    console.error('Error disconnecting', error);
+    console.error("❌ Error disconnecting from PostgreSQL:", error);
   }
 };
 
+export const queryDatabase = async (query: string, values: any[] = []): Promise<any> => {
+  try {
+    await connectDB();
+    const result = await client.query(query, values);
+    return result.rows; 
+  } catch (error) {
+    console.error("❌ Error executing query:", error);
+    throw error;
+  }
+};
 
-connectDB();
-
-process.on('SIGINT', async () => {
+process.on("SIGINT", async () => {
   await disconnectDB();
   process.exit();
 });
 
-process.on('SIGTERM', async () => {
+process.on("SIGTERM", async () => {
   await disconnectDB();
   process.exit();
 });
-
-export default client;
